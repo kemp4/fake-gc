@@ -1,3 +1,5 @@
+package fakeobject;
+
 public class FakeNonLOS extends FakeObject {
 
 

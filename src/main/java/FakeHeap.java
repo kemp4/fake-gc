@@ -6,6 +6,21 @@ public class FakeHeap {
     private long losPointer = 0;
     private long nonLosPointer = divisionAddress;
 
+    public void moveLosPointer(long size) {
+        losPointer+=size;
+    }
+    public void moveNonLosPointer(long size) {
+        nonLosPointer+=size;
+    }
+
+    public void resetPointers() {
+        losPointer = 0;
+        nonLosPointer = divisionAddress;
+    }
+
+    public void setDivisionAddress(long divisionAddress) {
+        this.divisionAddress = divisionAddress;
+    }
 
     public long getNonLosPointer() {
         return nonLosPointer;
@@ -31,10 +46,5 @@ public class FakeHeap {
         return size-nonLosPointer;
     }
 
-    public void moveLosPointer(long size) {
-        losPointer+=size;
-    }
-    public void moveNonLosPointer(long size) {
-        nonLosPointer+=size;
-    }
+
 }

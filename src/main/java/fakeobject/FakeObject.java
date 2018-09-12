@@ -1,8 +1,10 @@
+package fakeobject;
+
 public abstract class FakeObject {
 
 
-    protected long size;
-    protected String content;
+    long size;
+    String content;
 
 
     public long getSize() {
@@ -11,7 +13,7 @@ public abstract class FakeObject {
 
     @Override
     public String toString() {
-        return "FakeObject{" +
+        return "fakeobject.FakeObject{" +
                 "size=" + size +
                 ", content='" + content + '\'' +
                 '}';

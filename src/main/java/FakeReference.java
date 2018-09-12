@@ -25,4 +25,5 @@ public class FakeReference {
     public boolean isRefNotNull(){
         return refValue!=null;
     }
+
 }
