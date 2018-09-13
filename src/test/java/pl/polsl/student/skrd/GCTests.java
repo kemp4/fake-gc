@@ -45,14 +45,9 @@ public class GCTests {
 
     @Test
     public void mainTest() {
-
         for (int i =0 ; i < ITERATIONS_NUMBER ; i++){
-
-
             allocateInLOS(drawLosAllocsNumber());
-
             allocateInNonLOS(drawNonLosAllocsNumber());
-
             deathQueue.stream().forEach(FakeReference::deathGettingCloser);
             deathQueue.stream()
                     .filter(FakeReference::isDeathTime)

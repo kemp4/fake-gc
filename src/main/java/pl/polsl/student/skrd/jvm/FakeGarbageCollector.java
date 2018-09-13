@@ -99,11 +99,11 @@ public class FakeGarbageCollector {
 
     private double calculateNewDivisionAddress() {
         double losSurvivorsSize = sumLosSurvivors();
-        double foo = losAllocationSpeed+nonLosAllocationSpeed;
+        double totalAllocationSpeed = losAllocationSpeed+nonLosAllocationSpeed;
         double freeHeapSpaceAfterCollection = HEAP_SIZE - (losSurvivorsSize + sumNonLosSurvivors());
         if(freeHeapSpaceAfterCollection<HEAP_SIZE/10)
             {logger.warn("there will be less than 10% heap space left after collection. OUT OF MEMORY EXCEPTION MAY OCCUR");}
-        double proportion = losAllocationSpeed / foo;
+        double proportion = losAllocationSpeed / totalAllocationSpeed;
         return proportion * freeHeapSpaceAfterCollection + losSurvivorsSize;
     }
 

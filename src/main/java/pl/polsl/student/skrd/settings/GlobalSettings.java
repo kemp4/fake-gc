@@ -7,12 +7,15 @@ public interface GlobalSettings {
     int NON_LOS_SIZE = 4;
     int LOS_SIZE = 100;
     int ITERATIONS_NUMBER = 100000;
-    int MAX_LOS_LIFESPAN = 3;
-    int MAX_NON_LOS_LIFESPAN = 3;
-    int MIN_LOS_PER_ITERATION = 1;
-    int MAX_LOS_PER_ITERATION = 3;
-    int MIN_NON_LOS_PER_ITERATION = 100;
-    int MAX_NON_LOS_PER_ITERATION = 300;
-    int THRESHOLD = 20;
 
+    int MAX_LOS_LIFESPAN = 300;
+    int MAX_NON_LOS_LIFESPAN = 300;
+
+    int MIN_LOS_PER_ITERATION = 3;
+    int MAX_LOS_PER_ITERATION = 6;
+
+    int MIN_NON_LOS_PER_ITERATION = 300;
+    int MAX_NON_LOS_PER_ITERATION = 600;
+
+    int THRESHOLD = 20;
 }

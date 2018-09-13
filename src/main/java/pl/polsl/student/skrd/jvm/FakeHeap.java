@@ -68,7 +68,7 @@ public class FakeHeap {
     public void printStats() {
         double averageWasted =(double)(totalNonLosUnusedSum+totalLosUnusedSum)/(double) collectionsNum;
         System.out.println("Average wasted heap space: "+averageWasted);
-        System.out.println("Average wasted heap space in %: "+averageWasted/(double)HEAP_SIZE);
+        System.out.println("Average wasted heap space in %: "+(100*averageWasted/(double)HEAP_SIZE)+"%");
         System.out.println("Average division address: "+((double)totalDivAddress/(double)collectionsNum)+"/"+HEAP_SIZE);
 
     }
