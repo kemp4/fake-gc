@@ -1,9 +1,9 @@
-package fakeobject;
+package pl.polsl.student.skrd.fakeobject;
 
 public abstract class FakeObject {
 
 
-    long size;
+    protected long size;
     String content;
 
 
@@ -13,7 +13,7 @@ public abstract class FakeObject {
 
     @Override
     public String toString() {
-        return "fakeobject.FakeObject{" +
+        return "pl.polsl.student.skrd.fakeobject.FakeObject{" +
                 "size=" + size +
                 ", content='" + content + '\'' +
                 '}';
