@@ -1,4 +1,4 @@
-package pl.polsl.student.skrd;
+package pl.polsl.student.skrd.fakeobject;
 
 public class FakeReference implements Comparable<FakeReference> {
 
@@ -12,7 +12,7 @@ public class FakeReference implements Comparable<FakeReference> {
 
     @Override
     public String toString() {
-        return "pl.polsl.student.skrd.FakeReference{" +
+        return "pl.polsl.student.skrd.fakeobject.FakeReference{" +
                 "refValue=" + refValue +
                 '}';
     }

@@ -1,4 +1,4 @@
-package pl.polsl.student.skrd;
+package pl.polsl.student.skrd.jvm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +12,11 @@ public class FakeHeap {
     private long losPointer = 0;
     private long nonLosPointer = divisionAddress;
     Logger logger = LoggerFactory.getLogger(FakeHeap.class);
+
+    private long totalLosUnusedSum=0;
+    private long totalNonLosUnusedSum=0;
+    private long totalDivAddress=0;
+    private long collectionsNum=0;
 
 
     public void moveLosPointer(long size) {
@@ -49,8 +54,22 @@ public class FakeHeap {
         return size-nonLosPointer;
     }
 
-
     public long getDivisionAddress() {
         return divisionAddress;
+    }
+
+    public void saveStats() {
+        totalLosUnusedSum+=getLosFreeSize();
+        totalNonLosUnusedSum+=getNonLosFreeSize();
+        totalDivAddress+= divisionAddress;
+        collectionsNum++;
+    }
+
+    public void printStats() {
+        double averageWasted =(double)(totalNonLosUnusedSum+totalLosUnusedSum)/(double) collectionsNum;
+        System.out.println("Average wasted heap space: "+averageWasted);
+        System.out.println("Average wasted heap space in %: "+averageWasted/(double)HEAP_SIZE);
+        System.out.println("Average division address: "+((double)totalDivAddress/(double)collectionsNum)+"/"+HEAP_SIZE);
+
     }
 }

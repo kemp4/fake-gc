@@ -1,14 +1,17 @@
 package pl.polsl.student.skrd;
 
 import org.junit.After;
-import pl.polsl.student.skrd.fakeobject.FakeLOS;
-import pl.polsl.student.skrd.fakeobject.FakeNonLOS;
+import org.junit.Ignore;
+import pl.polsl.student.skrd.fakeobject.FakeLOSObject;
+import pl.polsl.student.skrd.fakeobject.FakeNonLOSObject;
 import pl.polsl.student.skrd.fakeobject.FakeObject;
 import org.junit.Before;
 import org.junit.Test;
+import pl.polsl.student.skrd.fakeobject.FakeReference;
 import pl.polsl.student.skrd.fakeobject.factory.FakeLOSFactory;
 import pl.polsl.student.skrd.fakeobject.factory.FakeNonLOSFactory;
 import pl.polsl.student.skrd.fakeobject.factory.FakeObjectFactory;
+import pl.polsl.student.skrd.jvm.FakeJVM;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -39,42 +42,6 @@ public class GCTests {
 
 
 
-    @Test
-    public void testGC() {
-        FakeReference fr1 = jvm.fakeNew(new FakeNonLOS("some content1"));
-        FakeReference fr2 = jvm.fakeNew(new FakeNonLOS("some content2"));
-        FakeReference fr3 = jvm.fakeNew(new FakeNonLOS("some content3"));
-        FakeReference fr4 = jvm.fakeNew(new FakeLOS("Large 1"));
-        FakeReference fr5 = jvm.fakeNew(new FakeLOS("Large 2"));
-        FakeReference fr6 = jvm.fakeNew(new FakeLOS("Large 3"));
-        FakeReference fr7 = jvm.fakeNew(new FakeLOS("Large 4"));
-        fr4.setRefValue(null);
-        fr6.setRefValue(null);
-        FakeReference fr8 = jvm.fakeNew(new FakeLOS("Large 5"));
-        FakeReference fr9 = jvm.fakeNew(new FakeLOS("Large 6"));
-
-    }
-
-    @Test
-    public void testLosGC2() {
-        for (int i = 0; i < 6; i++) {
-            referencesArray.add(jvm.fakeNew(new FakeLOS("large object " + i)));
-            if (i > 2) {
-                referencesArray.get(i - 3).setRefValueToNull();
-            }
-        }
-    }
-
-    @Test
-    public void testNonLosGC3() {
-
-        for (int i = 0; i < 5000; i++) {
-            referencesArray.add(jvm.fakeNew(new FakeNonLOS("small object " + i)));
-            if (i > 100) {
-                referencesArray.get(i - 100).setRefValueToNull();
-            }
-        }
-    }
 
     @Test
     public void mainTest() {
@@ -101,6 +68,72 @@ public class GCTests {
     private int drawNonLosAllocsNumber() {
         return generator.nextInt()%(MAX_NON_LOS_PER_ITERATION-MIN_NON_LOS_PER_ITERATION)+MIN_NON_LOS_PER_ITERATION;
     }
+
+    private void allocateInLOS(int objectsNumber){
+        IntStream.rangeClosed(1, objectsNumber)
+                .mapToObj(i -> jvm.fakeNew(losFactory.createObject(),drawLosLifespan()))
+                .forEach(deathQueue::add);
+
+    }
+    private void allocateInNonLOS(int objectsNumber){
+        IntStream.range(1, objectsNumber)
+                .mapToObj(i -> jvm.fakeNew(nonLosFactory.createObject(), drawNonLosLifespan()))
+                .forEach(deathQueue::add);
+    }
+
+    @After
+    public void printResults(){
+        long allCreations = losFactory.getCreationsNumber() + nonLosFactory.getCreationsNumber();
+        System.out.println("number of collections TOTAL: "+jvm.getCollectionsNumber()+"  LOS CAUSED: "+jvm.getByLosCollectionsNumber()+"  NON-LOS CAUSED:"+jvm.getByNonLosCollectionsNumber());
+        System.out.println("created objects TOTAL: "+allCreations+" LOS CREATED: "+losFactory.getCreationsNumber()+" NON-LOS CREATED: "+ nonLosFactory.getCreationsNumber());
+        jvm.printStats();
+    }
+
+    private int drawLosLifespan(){
+        return 1 + generator.nextInt() % MAX_LOS_LIFESPAN;
+    }
+
+    private int drawNonLosLifespan(){
+        return 1 + generator.nextInt() % MAX_NON_LOS_LIFESPAN;
+    }
+    @Ignore
+    @Test
+    public void testGC() {
+        FakeReference fr1 = jvm.fakeNew(new FakeNonLOSObject("some content1"));
+        FakeReference fr2 = jvm.fakeNew(new FakeNonLOSObject("some content2"));
+        FakeReference fr3 = jvm.fakeNew(new FakeNonLOSObject("some content3"));
+        FakeReference fr4 = jvm.fakeNew(new FakeLOSObject("Large 1"));
+        FakeReference fr5 = jvm.fakeNew(new FakeLOSObject("Large 2"));
+        FakeReference fr6 = jvm.fakeNew(new FakeLOSObject("Large 3"));
+        FakeReference fr7 = jvm.fakeNew(new FakeLOSObject("Large 4"));
+        fr4.setRefValue(null);
+        fr6.setRefValue(null);
+        FakeReference fr8 = jvm.fakeNew(new FakeLOSObject("Large 5"));
+        FakeReference fr9 = jvm.fakeNew(new FakeLOSObject("Large 6"));
+
+    }
+    @Ignore
+    @Test
+    public void testLosGC2() {
+        for (int i = 0; i < 6; i++) {
+            referencesArray.add(jvm.fakeNew(new FakeLOSObject("large object " + i)));
+            if (i > 2) {
+                referencesArray.get(i - 3).setRefValueToNull();
+            }
+        }
+    }
+    @Ignore
+    @Test
+    public void testNonLosGC3() {
+
+        for (int i = 0; i < 5000; i++) {
+            referencesArray.add(jvm.fakeNew(new FakeNonLOSObject("small object " + i)));
+            if (i > 100) {
+                referencesArray.get(i - 100).setRefValueToNull();
+            }
+        }
+    }
+    @Ignore
     @Test
     public void mixedTest() {
 
@@ -110,11 +143,11 @@ public class GCTests {
         for (int i = 0; i < 100; i++) {
             FakeObject object;
             if (generator.nextFloat() > 0.05) {
-                object = new FakeNonLOS("nonLOS" + i);
+                object = new FakeNonLOSObject("nonLOS" + i);
                 referencesArray.add(jvm.fakeNew(object));
                 nonLosIndexes.add(i);
             } else {
-                object = new FakeLOS("LOS " + i);
+                object = new FakeLOSObject("LOS " + i);
                 referencesArray.add(jvm.fakeNew(object));
                 losIndexes.add(i);
             }
@@ -131,32 +164,5 @@ public class GCTests {
         }
     }
 
-    private void allocateInLOS(int objectsNumber){
-        IntStream.rangeClosed(1, objectsNumber)
-                .mapToObj(i -> jvm.fakeNew(losFactory.createObject(),drawLosLifespan()))
-                .forEach(deathQueue::add);
 
-    }
-    private void allocateInNonLOS(int objectsNumber){
-        IntStream.range(1, objectsNumber)
-                .mapToObj(i -> jvm.fakeNew(nonLosFactory.createObject(), drawNonLosLifespan()))
-                .forEach(deathQueue::add);
-    }
-
-    private int drawLosLifespan(){
-        return 1 + generator.nextInt() % MAX_LOS_LIFESPAN;
-    }
-
-    private int drawNonLosLifespan(){
-        return 1 + generator.nextInt() % MAX_NON_LOS_LIFESPAN;
-    }
-
-    @After
-    public void printResults(){
-     //   System.out.println("references:");
-    //    jvm.printAliveReferences();
-     //   System.out.println("all objects on stack (dead too):");
-      //  jvm.printAllObjects();
-        System.out.println("number of collections TOTAL: "+jvm.getCollectionsNumber()+"  LOS: "+jvm.getByLosCollectionsNumber()+"  NON-LOS:"+jvm.getByNonLosCollectionsNumber());
-    }
 }

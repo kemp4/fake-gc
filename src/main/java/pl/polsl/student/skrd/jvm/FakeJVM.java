@@ -1,4 +1,4 @@
-package pl.polsl.student.skrd;
+package pl.polsl.student.skrd.jvm;
 
 import pl.polsl.student.skrd.exceptions.FakeNullReferenceException;
 import pl.polsl.student.skrd.fakeobject.FakeObject;
@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.polsl.student.skrd.fakeobject.FakeReference;
 
 import static pl.polsl.student.skrd.settings.GlobalSettings.IS_SPACE_TUNER_ON;
 
@@ -74,5 +75,9 @@ public class FakeJVM {
 
     public long getByNonLosCollectionsNumber() {
         return gc.getCollectionsNumber() - gc.getCollectionsByLosNumber();
+    }
+
+    public void printStats(){
+        heap.printStats();
     }
 }

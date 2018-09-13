@@ -1,11 +1,11 @@
-package pl.polsl.student.skrd;
+package pl.polsl.student.skrd.jvm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.polsl.student.skrd.exceptions.FakeOutOfMemoryException;
 import pl.polsl.student.skrd.fakeobject.FakeObject;
+import pl.polsl.student.skrd.fakeobject.FakeReference;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -66,6 +66,8 @@ public class FakeGarbageCollector {
         System.out.println();
         collectionsNumber++;
         heap.logStage();
+        heap.saveStats();
+
         if(IS_SPACE_TUNER_ON) {
             double heapNewDivisionAddress = calculateNewDivisionAddress();
             logger.debug("Space Tuner calculated new DivisionAddress : " +(long)heapNewDivisionAddress+" (Last Was : "+
@@ -75,13 +77,11 @@ public class FakeGarbageCollector {
         heap.resetPointers();
         Map<Long,FakeObject> refMapBuffer = new TreeMap<>();
 
-        Iterator<Map.Entry<Long, FakeObject>> iter = refMap.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry<Long, FakeObject> e = iter.next();
-            reallocate(e, refMapBuffer);
-        }
+        refMap.entrySet().stream().forEach(o -> reallocate(o,refMapBuffer));
         refMap.clear();
+
         refMap.putAll(refMapBuffer);
+        references.removeIf(FakeReference::isRefNull);
         losAllocationSpeed = 0;
         nonLosAllocationSpeed = 0;
     }
@@ -101,8 +101,8 @@ public class FakeGarbageCollector {
         double losSurvivorsSize = sumLosSurvivors();
         double foo = losAllocationSpeed+nonLosAllocationSpeed;
         double freeHeapSpaceAfterCollection = HEAP_SIZE - (losSurvivorsSize + sumNonLosSurvivors());
-        if(freeHeapSpaceAfterCollection<HEAP_SIZE/10){logger.warn("there will be less than 10% heap space left after collection. OUT OF MEMORY EXCEPTION MAY OCCUR LOS  (total heap size = "+HEAP_SIZE+" )");}
-        if((heap.getLosFreeSize()+ heap.getNonLosFreeSize())<HEAP_SIZE/10){logger.warn(" GIIIITTTTRT ap size = "+HEAP_SIZE+" )");} //todo write some better message
+        if(freeHeapSpaceAfterCollection<HEAP_SIZE/10)
+            {logger.warn("there will be less than 10% heap space left after collection. OUT OF MEMORY EXCEPTION MAY OCCUR");}
         double proportion = losAllocationSpeed / foo;
         return proportion * freeHeapSpaceAfterCollection + losSurvivorsSize;
     }
@@ -142,14 +142,14 @@ public class FakeGarbageCollector {
 
     private long allocateObjectInLos(FakeObject object) {
         long actualAddress = heap.getLosPointer();
-        losAllocationSpeed+=object.getSize();
+        losAllocationSpeed += object.getSize();
         heap.moveLosPointer(object.getSize());
         return actualAddress;
     }
 
     private long allocateObjectInNonLos(FakeObject object) {
         long actualAddress = heap.getNonLosPointer();
-        nonLosAllocationSpeed+=object.getSize();
+        nonLosAllocationSpeed += object.getSize();
         heap.moveNonLosPointer(object.getSize());
         return actualAddress;
     }
