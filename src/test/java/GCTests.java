@@ -1,18 +1,25 @@
 import fakeobject.FakeLOS;
 import fakeobject.FakeNonLOS;
+import fakeobject.FakeObject;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 public class GCTests {
 
-    FakeJVM jvm;
+    private FakeJVM jvm;
+    private Random generator;
 
     @Before
-    public void beforeEach(){
+    public void beforeEach()
+    {
         jvm = new FakeJVM();
+        generator = new Random();
+
     }
 
     @Test
@@ -68,12 +75,37 @@ public class GCTests {
     }
 
     @Test
+    public void mainTest() {
+
+    }
+
+    @Test
     public void mixedTest() {
+
         List<FakeReference> referencesArray = new ArrayList<>();
-        for (int i = 0; i < 5000; i++) {
-            referencesArray.add(jvm.fakeNew(new FakeNonLOS("small object " + i)));
-            if (i > 100) {
-                referencesArray.get(i - 100).setRefValue(null);
+        List<Integer> losIndexes = new LinkedList<>();
+        List<Integer> nonLosIndexes = new LinkedList<>();
+
+        for (int i=0; i < 200; i++) {
+            FakeObject object;
+            if (generator.nextFloat() > 0.02) {
+                object = new FakeNonLOS("nonLOS" + i);
+                referencesArray.add(jvm.fakeNew(object));
+                nonLosIndexes.add(i);
+            } else {
+                object = new FakeLOS("LOS " + i);
+                referencesArray.add(jvm.fakeNew(object));
+                losIndexes.add(i);
+            }
+            if (losIndexes.size()>3){
+                int index = Math.abs(generator.nextInt()%losIndexes.size());
+                referencesArray.get(losIndexes.get(index)).setRefValue(null);
+                losIndexes.remove(index);
+            }
+            if (nonLosIndexes.size()>100){
+                int index = Math.abs(generator.nextInt()%nonLosIndexes.size());
+                referencesArray.get(nonLosIndexes.get(index)).setRefValue(null);
+                nonLosIndexes.remove(index);
             }
         }
         System.out.println("references:");

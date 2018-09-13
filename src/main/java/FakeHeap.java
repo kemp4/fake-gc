@@ -30,14 +30,6 @@ public class FakeHeap {
         return losPointer;
     }
 
-    public long getLosSize() {
-        return 0;
-    }
-
-    public long getNonLosSize() {
-        return 0;
-    }
-
     public long getLosFreeSize() {
         return divisionAddress -losPointer;
     }

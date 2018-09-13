@@ -7,10 +7,11 @@ import java.util.TreeMap;
 
 public class FakeGarbageCollector {
 
+    private final boolean IS_SPACE_TUNER_ON = true;
+
     private long collectionsNumber = 0;
     private long collectionsByLosNumber = 0;
 
-    private final boolean IS_SPACE_TUNER_ON = false;
     private final Map<Long,FakeObject> refMap;
     private final FakeHeap heap;
     private final List<FakeReference> references;
@@ -57,14 +58,18 @@ public class FakeGarbageCollector {
     private void runCollection()  {
         collectionsNumber++;
         if(IS_SPACE_TUNER_ON) {
-            long heapNewDivisionAddress = calculateNewDivisionAddress();
-            heap.setDivisionAddress(heapNewDivisionAddress);
+            double heapNewDivisionAddress = calculateNewDivisionAddress();
+            heap.setDivisionAddress((long)heapNewDivisionAddress);
         }
         heap.resetPointers();
         Map<Long,FakeObject> refMapBuffer = new TreeMap<>();
-        refMap.entrySet().forEach(e->reallocate(e,refMapBuffer));
+        for (Map.Entry<Long, FakeObject> e : refMap.entrySet()) {
+            reallocate(e, refMapBuffer);
+        }
         refMap.clear();
         refMap.putAll(refMapBuffer);
+        losAllocationSpeed =0;
+        nonLosAllocationSpeed=0;
     }
 
     private void reallocate(Map.Entry<Long, FakeObject> entry, Map<Long, FakeObject> refMapBuffer) {
@@ -77,22 +82,29 @@ public class FakeGarbageCollector {
         }
     }
 
-
-    private long calculateNewDivisionAddress() {
-        long survivorsSize = sumAliveObjects();
-        return losAllocationSpeed / ( (losAllocationSpeed+nonLosAllocationSpeed) *
-                (heap.getLosFreeSize()+heap.getNonLosFreeSize())+(survivorsSize) );
-
+    private double calculateNewDivisionAddress() {
+        double losSurvivorsSize = sumLosSurvivors();
+        double losFree = heap.getLosFreeSize();
+        double nonLosFree = heap.getNonLosFreeSize();
+        double foo = losAllocationSpeed+nonLosAllocationSpeed;
+        double boo = losFree+nonLosFree;
+        double proportion = losAllocationSpeed / foo;
+        return proportion * boo + losSurvivorsSize;
     }
 
-    private long sumAliveObjects() {
-        return references.stream()
-                .filter(FakeReference::isRefNotNull)
-                .map(FakeReference::getRefValue)
-                .distinct()
-                .map(refMap::get)
-                .mapToLong(FakeObject::getSize)
-                .sum();
+    private long sumLosSurvivors() {
+        try {
+            return references.stream()
+                    .filter(FakeReference::isRefNotNull)
+                    .map(FakeReference::getRefValue)
+                    .distinct()
+                    .map(refMap::get)
+                    .mapToLong(FakeObject::getSize)
+                    .filter(l -> l >= threshold)
+                    .sum();
+        }catch (Exception e){
+            return 0;
+        }
     }
 
     private long allocateObjectInLos(FakeObject object) {
@@ -109,7 +121,6 @@ public class FakeGarbageCollector {
         return actualAddress;
     }
 
-
     private boolean isNonLosAllocPossible(FakeObject object) {
         return (heap.getNonLosFreeSize() > object.getSize());
     }
@@ -121,16 +132,9 @@ public class FakeGarbageCollector {
     public long getCollectionsNumber() {
         return collectionsNumber;
     }
+
     public long getCollectionsByLosNumber() {
         return collectionsByLosNumber;
     }
 
-//    private List<FakeObject> getAliveObjects() {
-//        return references.stream()
-//                .filter(FakeReference::isRefNotNull)
-//                .map(FakeReference::getRefValue)
-//                .distinct()
-//                .map(refMap::get)
-//                .collect(Collectors.toList());
-//    }
 }
